@@ -11,6 +11,7 @@
 #include "time.h"
 
 int sockfd;
+int fd;
 
 void sig_handler(int signo)
 {
@@ -45,6 +46,27 @@ void do_service(int fd)
     {
         perror("write error");
     }
+}
+
+void *runner(void *param)
+{
+    struct sockaddr_in *clientaddr = (struct sockaddr_in *)param;
+    // if (fd < 0)
+    // {
+    //     perror("accept error");
+    //     continue;
+    // }
+
+    /*5：调用IO函数（read/write）和
+            连接的客户端进行双向通信
+        */
+    out_addr(clientaddr);
+    do_service(fd);
+    std::cout << "My thread ID is " << pthread_self() << std::endl;
+
+    /*6.关闭socket*/
+    close(fd);
+    // pthread_exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -108,29 +130,15 @@ int main(int argc, char *argv[])
     while (1)
     {
 
-        int fd = accept(sockfd,
-                        (struct sockaddr *)&clientaddr,
-                        &clientaddr_len);
-        pid_t pid = fork();
-        if (pid == 0)
-        {
-            std::cout << "I'm a new process and my pid is " << getpid() << std::endl;
-            std::cout << "My parent process's pid is " << getppid() << std::endl;
-            if (fd < 0)
-            {
-                perror("accept error");
-                continue;
-            }
+        fd = accept(sockfd,
+                    (struct sockaddr *)&clientaddr,
+                    &clientaddr_len);
 
-            /*5：调用IO函数（read/write）和
-            连接的客户端进行双向通信
-        */
-            out_addr(&clientaddr);
-            do_service(fd);
-
-            /*6.关闭socket*/
-            close(fd);
-        }
+        pthread_t tid;       /* the thread identifier */
+        pthread_attr_t attr; /* set of thread attributes */
+        pthread_attr_init(&attr);
+        pthread_create(&tid, NULL, runner, (void *)(&clientaddr));
+        /* set the default attributes of the thread */
     }
 
     return 0;
