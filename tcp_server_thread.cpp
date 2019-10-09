@@ -62,7 +62,6 @@ void *runner(void *param)
         */
     out_addr(clientaddr);
     do_service(fd);
-    std::cout << "My thread ID is " << pthread_self() << std::endl;
 
     /*6.关闭socket*/
     close(fd);
