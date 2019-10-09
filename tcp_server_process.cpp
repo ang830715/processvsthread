@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
         if (pid == 0)
         {
             std::cout << "I'm a new process and my pid is " << getpid() << std::endl;
-            std::cout << "My parent process's pid is " << getppid() << std::endl;
+
             if (fd < 0)
             {
                 perror("accept error");

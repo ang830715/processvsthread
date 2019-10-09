@@ -66,7 +66,16 @@ void *runner(void *param)
 
     /*6.关闭socket*/
     close(fd);
-    // pthread_exit(0);
+    int i = 0;
+    while (true) // 这里由于macos系统的某些机制，不写个循环线程执行完后就会被结束或者挂起，因此为了能在activity monitor里直观的见到线程数这里写了个死循环
+    {
+        std::cout << "My thread ID is " << pthread_self() << ". "
+                  << "I'm responding." << std::endl;
+        i++;
+        sleep(2);
+    }
+
+    pthread_exit(0);
 }
 
 int main(int argc, char *argv[])
@@ -134,11 +143,10 @@ int main(int argc, char *argv[])
                     (struct sockaddr *)&clientaddr,
                     &clientaddr_len);
 
-        pthread_t tid;       /* the thread identifier */
-        pthread_attr_t attr; /* set of thread attributes */
+        pthread_t tid;
+        pthread_attr_t attr;
         pthread_attr_init(&attr);
-        pthread_create(&tid, NULL, runner, (void *)(&clientaddr));
-        /* set the default attributes of the thread */
+        pthread_create(&tid, NULL, runner, (void *)(&clientaddr)); //创建新线程执行runner子程序，接管客户端需求
     }
 
     return 0;
